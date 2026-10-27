@@ -5,8 +5,20 @@
   </head>
 <body>
 
-  <a-scene>
-    mindar-image= "imageTargetSrc: "
+  <a-scene
+    mindar-image= "imageTargetSrc:https://raw.githubusercontent.com/shakou-u/TAREAMindARR/main/targets.mind"
+    vr-mode-ui="enable: false"
+    device-orientation-permission-ui= "enabled: false"
+    >
+    <a-camera position="0 0 0" look-controls=2enabled: false" ></a-camera>
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-gltf-model 
+        rotation="0 0 0" position
+        position="0 0 0.1"
+        scale="0.5 0.5 0.5"
+        src="https://raw.githubusercontent.com/shakou-u/TAREAMindARR/main/targets.mind"
+        >
+      </a-gltf-model>
   </a-scene>
     
   </body>
