@@ -10,28 +10,38 @@
 </head>
 
 <body>
-  <a-scene
-    mindar-image="imageTargetSrc: https://raw.githubusercontent.com/shakou-u/TAREAMindARR/main/targets.mind;"
-    color-space="sRGB"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false"
-    >
+ 
+<a-scene
+  mindar-image="imageTargetSrc: https://raw.githubusercontent.com/shakou-u/TAREAMindARR/main/targets.mind;"
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false">
 
-    <a-camera
+  <a-camera
+    position="0 0 0"
+    look-controls="enabled: false">
+  </a-camera>
+
+  <!-- Primera imagen -->
+  <a-entity mindar-image-target="targetIndex: 0">
+    <a-plane
+      color="blue"
       position="0 0 0"
-      look-controls="enabled: false">
-    </a-camera>
+      width="1"
+      height="0.6">
+    </a-plane>
+  </a-entity>
 
-    <a-entity mindar-image-target="targetIndex: 0">
-      <a-plane
-        color="blue"
-        opacity="0.7"
-        position="0 0 0"
-        width="1"
-        height="0.552">
-      </a-plane>
-    </a-entity>
+  <!-- Segunda imagen -->
+  <a-entity mindar-image-target="targetIndex: 1">
+    <a-plane
+      color="red"
+      position="0 0 0"
+      width="1"
+      height="0.6">
+    </a-plane>
+  </a-entity>
 
-  </a-scene>
+</a-scene>
+
 </body>
 </html>
