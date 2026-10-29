@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>MindAR Interactivo</title>
+  <title>MindAR Interactivo - Minecraft</title>
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -40,8 +40,9 @@
 
 <body>
 
+  <!-- MENSAJE EN PANTALLA -->
   <div id="mensaje">
-    ¡Toca el cubito o a Steve! 👆
+    ¡Toca los objetos de Minecraft! 🎮
   </div>
 
   <!-- ESCENA DE REALIDAD AUMENTADA -->
@@ -60,26 +61,38 @@
     </a-camera>
 
     <!-- IMAGEN TARGET -->
-    <a-entity mindar-image-target="targetIndex: 0">
+    <a-entity
+      id="target"
+      mindar-image-target="targetIndex: 0">
 
- <a-entity
-  id="steve"
-  gltf-model="./sheep.glb?v=2"
-  position="-0.3 0 0.1"
-  rotation="0 0 0"
-  scale="0.01 0.01 0.01">
-</a-entity>
+      <!-- OVEJITA 🐑 -->
+      <a-entity
+        id="steve"
+        gltf-model="./sheep.glb?v=2"
+        position="-0.35 0 0.1"
+        rotation="0 0 0"
+        scale="0.01 0.01 0.01">
+      </a-entity>
 
-      <!-- CUBITO -->
+      <!-- CUBITO 🌈 -->
       <a-box
         id="cubito"
-        position="0.3 0 0.1"
+        position="0 0 0.1"
         rotation="0 45 0"
-        width="0.3"
-        height="0.3"
-        depth="0.3"
+        width="0.25"
+        height="0.25"
+        depth="0.25"
         color="#FF0000">
       </a-box>
+
+      <!-- WARDEN 💙 -->
+      <a-entity
+        id="warden"
+        gltf-model="./warden.glb?v=1"
+        position="0.35 0 0.1"
+        rotation="0 0 0"
+        scale="0.01 0.01 0.01">
+      </a-entity>
 
     </a-entity>
 
@@ -87,11 +100,14 @@
 
   <script>
 
+    // ELEMENTOS
     const escena = document.querySelector('a-scene');
     const cubito = document.querySelector('#cubito');
     const steve = document.querySelector('#steve');
+    const warden = document.querySelector('#warden');
     const camara = document.querySelector('#camara');
     const mensaje = document.querySelector('#mensaje');
+    const target = document.querySelector('#target');
 
     // COLORES DEL CUBITO
     const colores = [
@@ -105,12 +121,11 @@
 
     let indice = 0;
 
-    // CONTROL DE STEVE
+    // OVEJITA GIRATORIA
     let girando = false;
     let angulo = 0;
 
-    // HACER GIRAR A STEVE
-    AFRAME.registerComponent('girar-steve', {
+    AFRAME.registerComponent('girar-oveja', {
 
       tick: function (time, delta) {
 
@@ -129,9 +144,38 @@
 
     });
 
-    steve.setAttribute('girar-steve', '');
+    steve.setAttribute('girar-oveja', '');
 
-    // DETECTAR TOQUES
+    // WARDEN QUE CRECE Y SE ENCOGE
+    let wardenGrande = false;
+
+    const escalaNormal = 0.01;
+    const escalaGrande = 0.02;
+
+    // Animación suave del Warden
+    warden.setAttribute(
+      'animation__crecer',
+      {
+        property: 'scale',
+        startEvents: 'crecer',
+        to: `${escalaGrande} ${escalaGrande} ${escalaGrande}`,
+        dur: 500,
+        easing: 'easeInOutQuad'
+      }
+    );
+
+    warden.setAttribute(
+      'animation__encoger',
+      {
+        property: 'scale',
+        startEvents: 'encoger',
+        to: `${escalaNormal} ${escalaNormal} ${escalaNormal}`,
+        dur: 500,
+        easing: 'easeInOutQuad'
+      }
+    );
+
+    // DETECTAR TOQUES EN CELULAR
     escena.addEventListener('renderstart', function () {
 
       const raycaster = new THREE.Raycaster();
@@ -139,31 +183,76 @@
 
       escena.canvas.addEventListener('pointerdown', function (evento) {
 
+        // No detectar objetos si no vemos el target
+        if (!target.object3D.visible) {
+          return;
+        }
+
         const rect = escena.canvas.getBoundingClientRect();
 
+        // POSICIÓN DEL DEDO
         mouse.x = ((evento.clientX - rect.left) / rect.width) * 2 - 1;
+
         mouse.y = -((evento.clientY - rect.top) / rect.height) * 2 + 1;
 
+        // LANZAR RAYO DESDE LA CÁMARA
         raycaster.setFromCamera(
           mouse,
           camara.getObject3D('camera')
         );
 
-        // DETECTAR CUBITO
+        // DETECTAR LOS TRES OBJETOS
         const tocarCubo = raycaster.intersectObject(
           cubito.object3D,
           true
         );
 
-        // DETECTAR STEVE
-        const tocarSteve = raycaster.intersectObject(
+        const tocarOveja = raycaster.intersectObject(
           steve.object3D,
           true
         );
 
-        if (tocarCubo.length > 0 &&
-            (tocarSteve.length === 0 ||
-             tocarCubo[0].distance < tocarSteve[0].distance)) {
+        const tocarWarden = raycaster.intersectObject(
+          warden.object3D,
+          true
+        );
+
+        // Guardar los objetos tocados
+        const objetosTocados = [];
+
+        if (tocarCubo.length > 0) {
+          objetosTocados.push({
+            nombre: 'cubo',
+            distancia: tocarCubo[0].distance
+          });
+        }
+
+        if (tocarOveja.length > 0) {
+          objetosTocados.push({
+            nombre: 'oveja',
+            distancia: tocarOveja[0].distance
+          });
+        }
+
+        if (tocarWarden.length > 0) {
+          objetosTocados.push({
+            nombre: 'warden',
+            distancia: tocarWarden[0].distance
+          });
+        }
+
+        // Si no tocamos ningún objeto
+        if (objetosTocados.length === 0) {
+          return;
+        }
+
+        // Elegir el objeto más cercano al dedo
+        objetosTocados.sort((a, b) => a.distancia - b.distancia);
+
+        const objeto = objetosTocados[0].nombre;
+
+        // INTERACCIÓN 1: CUBITO
+        if (objeto === 'cubo') {
 
           indice = (indice + 1) % colores.length;
 
@@ -173,18 +262,44 @@
             colores[indice]
           );
 
-          mensaje.textContent = 'CAMBIO DE COLOOOR';
+          mensaje.textContent = '¡EL CUBITO CAMBIÓ DE COLOR! 🌈';
 
         }
 
-        else if (tocarSteve.length > 0) {
+        // INTERACCIÓN 2: OVEJITA
+        else if (objeto === 'oveja') {
 
           girando = !girando;
 
           if (girando) {
-            mensaje.textContent = 'Warden girando';
+
+            mensaje.textContent = '¡LA OVEJITA ESTÁ GIRANDO! 🐑🔄';
+
           } else {
-            mensaje.textContent = 'altooo';
+
+            mensaje.textContent = '¡LA OVEJITA SE DETUVO! 🐑🛑';
+
+          }
+
+        }
+
+        // INTERACCIÓN 3: WARDEN
+        else if (objeto === 'warden') {
+
+          wardenGrande = !wardenGrande;
+
+          if (wardenGrande) {
+
+            warden.emit('crecer');
+
+            mensaje.textContent = '¡EL WARDEN ESTÁ CRECIENDO! 💙';
+
+          } else {
+
+            warden.emit('encoger');
+
+            mensaje.textContent = '¡EL WARDEN SE ENCOGIÓ! 💙';
+
           }
 
         }
