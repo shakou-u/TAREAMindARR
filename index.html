@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
 
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MindAR Interactivo</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <script>
+    // Componente que cambia el color del cubo al tocarlo
+    AFRAME.registerComponent('cambiar-color', {
+
+      init: function () {
+
+        const cubo = this.el;
+
+        const colores = [
+          '#FF0000',
+          '#00FF00',
+          '#0000FF',
+          '#FFFF00',
+          '#FF00FF',
+          '#00FFFF'
+        ];
+
+        let indice = 0;
+
+        cubo.addEventListener('click', function () {
+
+          indice = (indice + 1) % colores.length;
+
+          cubo.setAttribute('color', colores[indice]);
+
+          console.log('¡El cubo cambió de color!');
+        });
+
+      }
+
+    });
+  </script>
+
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind;"
+    color-space="sRGB"
+    renderer="colorManagement: true;"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <!-- Cámara con detección de clics -->
+    <a-camera
+      position="0 0 0"
+      look-controls="enabled: false"
+      cursor="fuse: false; rayOrigin: mouse;"
+      raycaster="near: 0.01; far: 1000; objects: .interactivo;">
+    </a-camera>
+
+    <!-- Imagen que reconocerá MindAR -->
+    <a-entity mindar-image-target="targetIndex: 0">
+
+      <!-- Cubito mágico -->
+      <a-box
+        class="interactivo"
+        cambiar-color
+        position="0 0 0.1"
+        rotation="0 45 0"
+        width="0.3"
+        height="0.3"
+        depth="0.3"
+        color="#FF0000">
+      </a-box>
+
+    </a-entity>
+
+  </a-scene>
+
+</body>
+</html>
