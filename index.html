@@ -13,53 +13,14 @@
   <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <script>
-    // Componente que cambia el color del cubito
-    AFRAME.registerComponent('cambiar-color', {
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
 
-      init: function () {
-
-        const cubo = this.el;
-
-        const colores = [
-          '#FF0000',
-          '#00FF00',
-          '#0000FF',
-          '#FFFF00',
-          '#FF00FF',
-          '#00FFFF'
-        ];
-
-        let indice = 0;
-
-        cubo.addEventListener('click', function () {
-
-          indice = (indice + 1) % colores.length;
-
-          // Cambiar color del cubito
-          cubo.setAttribute('material', 'color', colores[indice]);
-
-          // Mostrar mensaje en pantalla
-          document.getElementById('mensaje').textContent =
-            '¡TOCASTE EL CUBITO! 🌈';
-
-          console.log('¡El cubo cambió de color!');
-
-        });
-
-      }
-
-    });
-  </script>
-
-</head>
-
-<body style="margin: 0; overflow: hidden;">
-
-  <!-- Mensaje en pantalla -->
-  <div id="mensaje"
-    style="
-      position: absolute;
+    #mensaje {
+      position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
@@ -72,11 +33,17 @@
       font-weight: bold;
       text-align: center;
       pointer-events: none;
-    ">
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div id="mensaje">
     Toca el cubito rojo 👆
   </div>
 
-  <!-- Escena de realidad aumentada -->
   <a-scene
     mindar-image="imageTargetSrc: ./targets.mind;"
     color-space="sRGB"
@@ -84,21 +51,19 @@
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false">
 
-    <!-- Cámara que detecta los toques -->
+    <!-- Cámara -->
     <a-camera
+      id="camara"
       position="0 0 0"
-      look-controls="enabled: false"
-      cursor="rayOrigin: mouse; fuse: false;"
-      raycaster="objects: .interactivo; far: 1000;">
+      look-controls="enabled: false">
     </a-camera>
 
-    <!-- Imagen que reconoce MindAR -->
+    <!-- Imagen target -->
     <a-entity mindar-image-target="targetIndex: 0">
 
-      <!-- Cubito mágico -->
+      <!-- Cubito -->
       <a-box
-        class="interactivo"
-        cambiar-color
+        id="cubito"
         position="0 0 0.1"
         rotation="0 45 0"
         width="0.3"
@@ -110,6 +75,65 @@
     </a-entity>
 
   </a-scene>
+
+  <script>
+
+    const escena = document.querySelector('a-scene');
+    const cubito = document.querySelector('#cubito');
+    const camara = document.querySelector('#camara');
+    const mensaje = document.querySelector('#mensaje');
+
+    const colores = [
+      '#FF0000',
+      '#00FF00',
+      '#0000FF',
+      '#FFFF00',
+      '#FF00FF',
+      '#00FFFF'
+    ];
+
+    let indice = 0;
+
+    escena.addEventListener('renderstart', function () {
+
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      // Detectar cuando el dedo toca la pantalla
+      escena.canvas.addEventListener('pointerdown', function (evento) {
+
+        const rect = escena.canvas.getBoundingClientRect();
+
+        // Obtener posición del dedo
+        mouse.x = ((evento.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((evento.clientY - rect.top) / rect.height) * 2 + 1;
+
+        // Lanzar un rayo desde la cámara
+        raycaster.setFromCamera(mouse, camara.getObject3D('camera'));
+
+        // Detectar si tocamos el cubito
+        const intersecciones = raycaster.intersectObject(
+          cubito.object3D,
+          true
+        );
+
+        if (intersecciones.length > 0) {
+
+          indice = (indice + 1) % colores.length;
+
+          cubito.setAttribute('material', 'color', colores[indice]);
+
+          mensaje.textContent = '¡CAMBIÓ DE COLOR! 🌈';
+
+          console.log('Cubito tocado correctamente');
+
+        }
+
+      });
+
+    });
+
+  </script>
 
 </body>
 </html>
