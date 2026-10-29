@@ -7,10 +7,8 @@
 
   <title>MindAR Interactivo - Minecraft</title>
 
-  <!-- A-Frame -->
+  
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
-  <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
@@ -40,12 +38,11 @@
 
 <body>
 
-  <!-- MENSAJE EN PANTALLA -->
   <div id="mensaje">
     Toca cualquier objeto!!!
   </div>
 
-  <!-- ESCENA DE REALIDAD AUMENTADA -->
+  
   <a-scene
     mindar-image="imageTargetSrc: ./targets.mind;"
     color-space="sRGB"
@@ -99,7 +96,7 @@
 
   <script>
 
-    // ELEMENTOS
+   
     const escena = document.querySelector('a-scene');
     const cubito = document.querySelector('#cubito');
     const steve = document.querySelector('#steve');
@@ -108,7 +105,6 @@
     const mensaje = document.querySelector('#mensaje');
     const target = document.querySelector('#target');
 
-    // COLORES DEL CUBITO
     const colores = [
       '#FF0000',
       '#00FF00',
@@ -120,7 +116,6 @@
 
     let indice = 0;
 
-    // OVEJITA GIRATORIA
     let girando = false;
     let angulo = 0;
 
@@ -145,11 +140,11 @@
 
     steve.setAttribute('girar-oveja', '');
 
-    // WARDEN QUE CRECE Y SE ENCOGE
+
     let wardenGrande = false;
 const escalaNormal = 0.1;
 const escalaGrande = 0.2;
-    // Animación suave del Warden
+
     warden.setAttribute(
       'animation__crecer',
       {
@@ -172,7 +167,6 @@ const escalaGrande = 0.2;
       }
     );
 
-    // DETECTAR TOQUES EN CELULAR
     escena.addEventListener('renderstart', function () {
 
       const raycaster = new THREE.Raycaster();
@@ -180,25 +174,23 @@ const escalaGrande = 0.2;
 
       escena.canvas.addEventListener('pointerdown', function (evento) {
 
-        // No detectar objetos si no vemos el target
         if (!target.object3D.visible) {
           return;
         }
 
         const rect = escena.canvas.getBoundingClientRect();
 
-        // POSICIÓN DEL DEDO
+      
         mouse.x = ((evento.clientX - rect.left) / rect.width) * 2 - 1;
 
         mouse.y = -((evento.clientY - rect.top) / rect.height) * 2 + 1;
 
-        // LANZAR RAYO DESDE LA CÁMARA
         raycaster.setFromCamera(
           mouse,
           camara.getObject3D('camera')
         );
 
-        // DETECTAR LOS TRES OBJETOS
+    
         const tocarCubo = raycaster.intersectObject(
           cubito.object3D,
           true
@@ -214,7 +206,7 @@ const escalaGrande = 0.2;
           true
         );
 
-        // Guardar los objetos tocados
+       
         const objetosTocados = [];
 
         if (tocarCubo.length > 0) {
@@ -238,17 +230,17 @@ const escalaGrande = 0.2;
           });
         }
 
-        // Si no tocamos ningún objeto
+     
         if (objetosTocados.length === 0) {
           return;
         }
 
-        // Elegir el objeto más cercano al dedo
+       
         objetosTocados.sort((a, b) => a.distancia - b.distancia);
 
         const objeto = objetosTocados[0].nombre;
 
-        // INTERACCIÓN 1: CUBITO
+        
         if (objeto === 'cubo') {
 
           indice = (indice + 1) % colores.length;
@@ -263,7 +255,7 @@ const escalaGrande = 0.2;
 
         }
 
-        // INTERACCIÓN 2: OVEJITA
+       
         else if (objeto === 'oveja') {
 
           girando = !girando;
@@ -280,7 +272,7 @@ const escalaGrande = 0.2;
 
         }
 
-        // INTERACCIÓN 3: WARDEN
+    
         else if (objeto === 'warden') {
 
           wardenGrande = !wardenGrande;
