@@ -41,9 +41,10 @@
 <body>
 
   <div id="mensaje">
-    Toca el cubito rojo :DDDDD
+    ¡Toca el cubito o a Steve! 👆
   </div>
 
+  <!-- ESCENA DE REALIDAD AUMENTADA -->
   <a-scene
     mindar-image="imageTargetSrc: ./targets.mind;"
     color-space="sRGB"
@@ -51,20 +52,29 @@
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false">
 
-    <!-- Cámara -->
+    <!-- CÁMARA -->
     <a-camera
       id="camara"
       position="0 0 0"
       look-controls="enabled: false">
     </a-camera>
 
-    <!-- Imagen target -->
+    <!-- IMAGEN TARGET -->
     <a-entity mindar-image-target="targetIndex: 0">
 
-      <!-- Cubito -->
+      <!-- STEVE -->
+      <a-entity
+        id="steve"
+        gltf-model="./steve.glb"
+        position="-0.3 0 0.1"
+        rotation="0 0 0"
+        scale="0.1 0.1 0.1">
+      </a-entity>
+
+      <!-- CUBITO -->
       <a-box
         id="cubito"
-        position="0 0 0.1"
+        position="0.3 0 0.1"
         rotation="0 45 0"
         width="0.3"
         height="0.3"
@@ -80,9 +90,11 @@
 
     const escena = document.querySelector('a-scene');
     const cubito = document.querySelector('#cubito');
+    const steve = document.querySelector('#steve');
     const camara = document.querySelector('#camara');
     const mensaje = document.querySelector('#mensaje');
 
+    // COLORES DEL CUBITO
     const colores = [
       '#FF0000',
       '#00FF00',
@@ -94,38 +106,87 @@
 
     let indice = 0;
 
+    // CONTROL DE STEVE
+    let girando = false;
+    let angulo = 0;
+
+    // HACER GIRAR A STEVE
+    AFRAME.registerComponent('girar-steve', {
+
+      tick: function (time, delta) {
+
+        if (girando) {
+
+          angulo += delta * 0.05;
+
+          steve.setAttribute(
+            'rotation',
+            `0 ${angulo} 0`
+          );
+
+        }
+
+      }
+
+    });
+
+    steve.setAttribute('girar-steve', '');
+
+    // DETECTAR TOQUES
     escena.addEventListener('renderstart', function () {
 
       const raycaster = new THREE.Raycaster();
       const mouse = new THREE.Vector2();
 
-      // Detectar cuando el dedo toca la pantalla
       escena.canvas.addEventListener('pointerdown', function (evento) {
 
         const rect = escena.canvas.getBoundingClientRect();
 
-        // Obtener posición del dedo
         mouse.x = ((evento.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((evento.clientY - rect.top) / rect.height) * 2 + 1;
 
-        // Lanzar un rayo desde la cámara
-        raycaster.setFromCamera(mouse, camara.getObject3D('camera'));
+        raycaster.setFromCamera(
+          mouse,
+          camara.getObject3D('camera')
+        );
 
-        // Detectar si tocamos el cubito
-        const intersecciones = raycaster.intersectObject(
+        // DETECTAR CUBITO
+        const tocarCubo = raycaster.intersectObject(
           cubito.object3D,
           true
         );
 
-        if (intersecciones.length > 0) {
+        // DETECTAR STEVE
+        const tocarSteve = raycaster.intersectObject(
+          steve.object3D,
+          true
+        );
+
+        if (tocarCubo.length > 0 &&
+            (tocarSteve.length === 0 ||
+             tocarCubo[0].distance < tocarSteve[0].distance)) {
 
           indice = (indice + 1) % colores.length;
 
-          cubito.setAttribute('material', 'color', colores[indice]);
+          cubito.setAttribute(
+            'material',
+            'color',
+            colores[indice]
+          );
 
-          mensaje.textContent = 'HZLO DE NUEVOO ';
+          mensaje.textContent = '¡EL CUBITO CAMBIÓ DE COLOR! 🌈';
 
-          console.log('Cubito tocado correctamente');
+        }
+
+        else if (tocarSteve.length > 0) {
+
+          girando = !girando;
+
+          if (girando) {
+            mensaje.textContent = '¡STEVE ESTÁ GIRANDO! 🔄';
+          } else {
+            mensaje.textContent = '¡STEVE SE DETUVO! 🛑';
+          }
 
         }
 
